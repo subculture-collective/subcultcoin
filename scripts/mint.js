@@ -2,7 +2,7 @@
 //
 //   CLUSTER=devnet|mainnet-beta   (default devnet)
 //   SUPPLY=1000000000             whole tokens (default 1,000,000,000)
-//   DECIMALS=9                    (default 9, the Solana norm)
+//   DECIMALS=6                    (default 6, as USDC and most new tokens)
 //   REVOKE_MINT=0                 keep the mint authority (default: revoke, so supply is fixed)
 //   KEYPAIR=<path>                payer/owner key (default ~/.config/subcultcoin/deployer.json)
 //   RECIPIENT=<address>           wallet that receives the supply (default: the payer)
@@ -24,7 +24,7 @@ import {
 import { createInitializeInstruction, pack } from "@solana/spl-token-metadata";
 
 const cluster = process.env.CLUSTER ?? "devnet";
-const decimals = Number(process.env.DECIMALS ?? 9);
+const decimals = Number(process.env.DECIMALS ?? 6);
 const supply = BigInt(process.env.SUPPLY ?? "1000000000") * 10n ** BigInt(decimals);
 const revoke = (process.env.REVOKE_MINT ?? "1") !== "0";
 const keypairPath = process.env.KEYPAIR ?? path.join(os.homedir(), ".config/subcultcoin/deployer.json");
