@@ -62,9 +62,9 @@ const metadata = { mint: mint.publicKey, name: NAME, symbol: SYMBOL, uri: URI, a
 const mintLen = getMintLen([ExtensionType.MetadataPointer]);
 const metadataLen = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length;
 const rent = await connection.getMinimumBalanceForRentExemption(mintLen + metadataLen);
-console.log(`Mint rent: ${rent / LAMPORTS_PER_SOL} SOL (plus ~0.002 SOL for the token account and fees)`);
-if (balance < rent + 0.01 * LAMPORTS_PER_SOL) {
-  console.error(`Not enough SOL. Fund ${payer.publicKey.toBase58()} with at least ${((rent / LAMPORTS_PER_SOL) + 0.01).toFixed(3)} SOL and rerun.`);
+console.log(`Mint rent: ${rent / LAMPORTS_PER_SOL} SOL (plus ~0.0021 SOL for the token account and fees)`);
+if (balance < rent + 0.0025 * LAMPORTS_PER_SOL) {
+  console.error(`Not enough SOL. Fund ${payer.publicKey.toBase58()} with at least ${((rent / LAMPORTS_PER_SOL) + 0.0025).toFixed(4)} SOL and rerun.`);
   process.exit(1);
 }
 
