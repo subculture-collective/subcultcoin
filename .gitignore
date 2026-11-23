@@ -1,6 +1,3 @@
 node_modules/
-cache/
-artifacts/
-types/
 .env
 .DS_Store
