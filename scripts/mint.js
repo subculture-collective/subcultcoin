@@ -5,6 +5,7 @@
 //   DECIMALS=9                    (default 9, the Solana norm)
 //   REVOKE_MINT=0                 keep the mint authority (default: revoke, so supply is fixed)
 //   KEYPAIR=<path>                payer/owner key (default ~/.config/subcultcoin/deployer.json)
+//   RECIPIENT=<address>           wallet that receives the supply (default: the payer)
 //   URI=<url>                     optional off-chain JSON (image, description)
 //
 // The keypair file is created on first run if missing. Only the public address is printed.
@@ -12,7 +13,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
-  Connection, Keypair, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl,
+  Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, clusterApiUrl,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import {
@@ -27,6 +28,7 @@ const decimals = Number(process.env.DECIMALS ?? 9);
 const supply = BigInt(process.env.SUPPLY ?? "1000000000") * 10n ** BigInt(decimals);
 const revoke = (process.env.REVOKE_MINT ?? "1") !== "0";
 const keypairPath = process.env.KEYPAIR ?? path.join(os.homedir(), ".config/subcultcoin/deployer.json");
+const recipient = process.env.RECIPIENT ? new PublicKey(process.env.RECIPIENT) : null;
 const NAME = "SUBCULT", SYMBOL = "SUBCULT", URI = process.env.URI ?? "";
 
 function loadOrCreateKeypair(file) {
@@ -81,11 +83,11 @@ const tx = new Transaction().add(
 await sendAndConfirmTransaction(connection, tx, [payer, mint]);
 
 const ata = await createAssociatedTokenAccountIdempotent(
-  connection, payer, mint.publicKey, payer.publicKey, undefined, TOKEN_2022_PROGRAM_ID);
+  connection, payer, mint.publicKey, recipient ?? payer.publicKey, undefined, TOKEN_2022_PROGRAM_ID);
 await mintTo(connection, payer, mint.publicKey, ata, payer, supply, [], undefined, TOKEN_2022_PROGRAM_ID);
 if (revoke) {
   await setAuthority(connection, payer, mint.publicKey, payer, AuthorityType.MintTokens, null, [], undefined, TOKEN_2022_PROGRAM_ID);
 }
 
 const explorer = cluster === "mainnet-beta" ? "" : `?cluster=${cluster}`;
-console.log(`\nSUBCULT minted.\nMint    : ${mint.publicKey.toBase58()}\nHolder  : ${ata.toBase58()}\nSupply  : ${process.env.SUPPLY ?? "1000000000"} (${revoke ? "mint authority revoked, supply fixed" : "mint authority kept"})\nExplorer: https://explorer.solana.com/address/${mint.publicKey.toBase58()}${explorer}`);
+console.log(`\nSUBCULT minted.\nMint    : ${mint.publicKey.toBase58()}\nOwner   : ${(recipient ?? payer.publicKey).toBase58()}\nHolder  : ${ata.toBase58()}\nSupply  : ${process.env.SUPPLY ?? "1000000000"} (${revoke ? "mint authority revoked, supply fixed" : "mint authority kept"})\nExplorer: https://explorer.solana.com/address/${mint.publicKey.toBase58()}${explorer}`);
